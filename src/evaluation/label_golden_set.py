@@ -4,6 +4,10 @@ INPUT_PATH = "data/golden_set.csv"
 OUTPUT_PATH = "data/golden_set.csv"
 
 df = pd.read_csv(INPUT_PATH)
+df["intent"] = df["intent"].fillna("")
+df["expected_response"] = df["expected_response"].fillna("")
+df["should_escalate"] = df["should_escalate"].fillna("")
+df["escalation_reason"] = df["escalation_reason"].fillna("")
 
 intents = [
     "Delivery / Tracking",
@@ -23,7 +27,7 @@ intents = [
 for i in range(len(df)):
 
     # Skip already labelled rows
-    if str(df.loc[i, "intent"]).strip():
+    if pd.notna(df.loc[i, "intent"]) and str(df.loc[i, "intent"]).strip():
         continue
 
     print("\n" + "=" * 80)

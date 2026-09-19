@@ -4,15 +4,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score
 
 
-DATA_PATH = "data/golden_set.csv"
-
+DATA_PATH = "data/baseline_data.csv"
 
 df = pd.read_csv(DATA_PATH)
 
-df = df[df["intent"].notna() & (df["intent"].str.strip() != "")]
+df["input_text"] = df["input_text"].fillna("").astype(str)
+df = df[df["input_text"].str.strip() != ""]
 
 X = df["conversation"]
 y = df["intent"]
@@ -26,19 +26,35 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 model = Pipeline([
-    ("tfidf", TfidfVectorizer(
-        lowercase=True,
-        ngram_range=(1, 2),
-        max_features=10000
-    )),
-    ("classifier", LogisticRegression(
-        max_iter=1000
-    ))
+    (
+        "tfidf",
+        TfidfVectorizer(
+            lowercase=True,
+            ngram_range=(1, 2),
+            max_features=10000
+        )
+    ),
+    (
+        "classifier",
+        LogisticRegression(
+            max_iter=1000,
+            class_weight="balanced"
+        )
+    )
 ])
 
 model.fit(X_train, y_train)
 
 predictions = model.predict(X_test)
 
-print("\nClassification Report:\n")
-print(classification_report(y_test, predictions))
+print("\n=== BASELINE 1: TF-IDF + LOGISTIC REGRESSION ===")
+print(f"Accuracy: {accuracy_score(y_test, predictions):.4f}")
+
+print("\n=== CLASSIFICATION REPORT ===")
+print(
+    classification_report(
+        y_test,
+        predictions,
+        zero_division=0
+    )
+)

@@ -1,14 +1,17 @@
+import pandas as pd
+
 from .retriever import ConversationRetriever
 from .build_context import build_context
 from src.models.llm import call_llm
+
+
+GOLDEN_PATH = "data/golden_set.csv"
 
 retriever = ConversationRetriever(top_k=3)
 
 
 def generate_response(customer_message):
-
     results = retriever.retrieve(customer_message)
-
     context = build_context(results)
 
     prompt = f"""
@@ -16,10 +19,9 @@ You are an Amazon customer support assistant.
 
 Generate a helpful response to the customer.
 
-Use the historical AmazonHelp responses below as guidance.
+Use the historical AmazonHelp responses as guidance.
 Do not invent policies, refunds, delivery dates, or guarantees.
-If the historical examples suggest that more information is needed,
-ask the customer for it.
+If more information is needed, ask the customer for it.
 
 Historical examples:
 {context}
@@ -30,19 +32,35 @@ Customer message:
 Write only the customer-facing response.
 """
 
-    response = call_llm(prompt)
-
-    return response
+    return call_llm(prompt)
 
 
 if __name__ == "__main__":
 
-    customer_message = (
-        "My package was supposed to arrive yesterday "
-        "but still hasn't arrived."
-    )
+    df = pd.read_csv(GOLDEN_PATH)
 
-    response = generate_response(customer_message)
+    for i, row in df.head(5).iterrows():
 
-    print("\n=== GENERATED RESPONSE ===")
-    print(response)
+        customer_message = row["conversation"]
+
+        # Get the latest customer message
+        messages = customer_message.split("\n")
+
+        customer_messages = [
+            msg.replace("CUSTOMER:", "", 1).strip()
+            for msg in messages
+            if msg.startswith("CUSTOMER:")
+        ]
+
+        if not customer_messages:
+            continue
+
+        customer_message = customer_messages[-1]
+
+        print(f"\n{'=' * 60}")
+        print(f"Example {i + 1}")
+        print(f"Customer: {customer_message}")
+
+        response = generate_response(customer_message)
+
+        print(f"Generated: {response}")

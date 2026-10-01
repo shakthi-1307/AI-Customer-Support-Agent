@@ -61,8 +61,8 @@ if __name__ == "__main__":
 
     results = []
 
-    # Start with 5 examples to validate the judge
-    for _, row in df.head(5).iterrows():
+    # Start with 30 examples to validate the judge
+    for _, row in df.head(30).iterrows():
         message = get_latest_customer_message(row["conversation"])
         response = generate_response(message)
 

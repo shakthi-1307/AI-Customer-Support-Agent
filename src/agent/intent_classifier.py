@@ -32,17 +32,44 @@ class IntentClassifier:
     def predict(self, message):
         text = message.lower()
 
+        if "refund" in text:
+            return "Refund"
+
         if any(x in text for x in [
-            "contacted support",
-            "contacted customer service",
-            "nobody has solved",
-            "no one has solved",
-            "still not resolved",
-            "third time",
-            "multiple times",
-            "supervisor",
-            "manager"
+            "fraud", "scam", "hacked", "unauthorized", "stolen"
+        ]):
+            return "Security / Fraud"
+
+        if any(x in text for x in [
+            "contacted support", "customer service",
+            "nobody has solved", "no one has solved",
+            "still not resolved", "supervisor", "manager"
         ]):
             return "Customer Service / Complaint"
+
+        if any(x in text for x in [
+            "where is my package", "where is my order",
+            "tracking", "package hasn't arrived",
+            "package has not arrived"
+        ]):
+            return "Delivery / Tracking"
+        
+        if any(x in text for x in [
+            "charged twice", "charged me", "double charged",
+            "billing", "payment"
+        ]):
+            return "Payment / Billing"
+
+        if any(x in text for x in [
+            "can't login", "cannot login", "can't log in",
+            "cannot log in", "forgot password", "account locked"
+        ]):
+            return "Account / Login"
+
+        if any(x in text for x in [
+            "prime membership", "cancel prime",
+            "cancel my prime", "prime subscription"
+        ]):
+            return "Prime Membership"
 
         return self.model.predict([message])[0]

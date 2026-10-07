@@ -33,10 +33,16 @@ Rules:
 5. If the historical examples do not contain enough information, give a safe general response.
 6. Write only the customer-facing reply.
 7. Keep it concise and complete.
+8. Never use "here", "below", "this link", or "click here" unless an actual link is provided.
+9. Do not mention links if no usable link is available.
 """
 
-    return call_llm(prompt)
+    response = call_llm(prompt)
 
+    response = response.replace("[Link to Return/Replacement Options]", "")
+    response = response.replace("[Link]", "")
+
+    return response.strip()
 
 if __name__ == "__main__":
 
